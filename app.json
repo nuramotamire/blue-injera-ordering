@@ -39,6 +39,14 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "blue_injera_ordering",
+          "organization": "personal-c3p"
+        }
       ]
     ],
     "experiments": {

@@ -1,6 +1,7 @@
 import CustomButton from '@/components/CustomButton'
 import CustomInput from '@/components/CustomInput'
 import { sign_In } from '@/lib/appwrite'
+import useAuthStore from '@/store/auth.store'
 import * as Sentry from '@sentry/react-native'
 import { Link, router } from 'expo-router'
 import React, { useState } from 'react'
@@ -19,7 +20,9 @@ const signIn = () => {
                           email:form.email,
                           password:form.password
                         })
-            
+            // ✅ Sync auth state after sign-in
+            const { fetchAuthenticatedUser } = useAuthStore.getState(); // 👈 get action
+            await fetchAuthenticatedUser(); // 👈 hydrate Zustand
             router.replace('/');
           }catch(error:any){
             Alert.alert('Error', error.message || 'Something went wrong');

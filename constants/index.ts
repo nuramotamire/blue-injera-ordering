@@ -19,6 +19,7 @@ import trash from "@/assets/icons/trash.png";
 import user from "@/assets/icons/user.png";
 import arrowBack from "../assets/icons/arrow-back.png";
 
+
 import avatar from "@/assets/images/avatar.png";
 import avocado from "@/assets/images/avocado.png";
 import bacon from "@/assets/images/bacon.png";

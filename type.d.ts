@@ -9,6 +9,9 @@ export interface MenuItem extends Models.Document {
     protein: number;
     rating: number;
     type: string;
+    // 🔹 NEW FIELDS
+    stock: number;         // e.g., 5
+    isAvailable: boolean;  // e.g., true
 }
 
 export interface Category extends Models.Document {
@@ -96,6 +99,16 @@ interface CreateUserParams {
     name: string;
 }
 
+interface CreateOrderParams{
+    userId: string;
+    items:string;
+    total: float;
+    deliveryAddress: string;
+    paymentMethod:string;
+    createdAt:datetime;
+    paidAmount?: flot;
+}
+
 interface SignInParams {
     email: string;
     password: string;
@@ -104,4 +117,58 @@ interface SignInParams {
 interface GetMenuParams {
     category: string;
     query: string;
+}
+
+
+// 📄 type.d.ts
+
+export interface Loyalty extends Models.Document {
+  userId: string;
+  points: number;
+  tier: 'bronze' | 'silver' | 'gold';
+  lastOrderAt?: string;
+}
+
+// 🔹 Add to CartStore (optional but helpful)
+interface CartStore {
+  // ... existing
+  loyaltyDiscount: number; // e.g., 5 (for 5%)
+  setLoyaltyDiscount: (discount: number) => void;
+}
+
+export interface User extends Models.Document {
+  name: string;
+  email: string;
+  avatar: string;
+  role: 'user' | 'admin' | 'chef'; // 🔹 new
+}
+
+export interface UserDoc extends User {
+  isAvailable: boolean;
+  phone?: string;
+  pushToken?: string;
+}
+
+
+export interface Order extends Models.Document {
+  userId: string;
+  deliveryAddress: string;
+  total: number;
+  status: string;
+  items: string;
+  createdAt: string;
+  updatedAt?: string;
+  // 🔹 NEW FIELDS
+  paymentMethod: 'cash' | 'credit';
+  paidAmount: flot;
+}
+
+
+// 📄 type.ts (or wherever CustomHeaderProps is defined)
+
+export interface CustomHeaderProps {
+  title?: string;
+  canGoBack?: boolean;     // ← add this
+  showSearch?: boolean;    // ← add this
+  onSearchPress?: () => void; // ← add this
 }

@@ -14,7 +14,7 @@ const AdminCard = ({ title, icon, onPress }: { title: string; icon: any; onPress
     activeOpacity={0.85}
   >
     <View className="w-12 h-12 bg-amber-100 rounded-lg items-center justify-center mr-4">
-      <Image source={icon} className="size-6" resizeMode="contain" tintColor="#FE8C00" />
+      <Image source={icon} className="size-6" resizeMode="contain" tintColor=" #34a9ca" />
     </View>
     <Text className="h3-bold text-gray-900 flex-1">{title}</Text>
     <Image source={images.arrowRight} className="size-5" resizeMode="contain" tintColor="#94A3B8" />

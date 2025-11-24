@@ -1,11 +1,19 @@
 // 📄 app/admin/menu/edit.tsx
-
 import CustomButton from '@/components/CustomButton';
 import CustomInput from '@/components/CustomInput';
 import { appwriteConfig, databases, storage } from '@/lib/appwrite';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { ID } from 'react-native-appwrite';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -51,18 +59,39 @@ export default function EditMenuItem() {
           image_url: item.image_url,
         });
       } catch (e) {
-        Alert.alert('Error', 'Failed to load item');
+        Alert.alert('Error', 'Failed to load menu item');
         router.back();
       }
     };
     fetchItem();
   }, [id]);
 
+  // 🔹 Handle image selection (stub — ready for expo-image-picker)
+  const handleImagePress = async () => {
+    // 👇 Uncomment & integrate when ready
+    // const result = await ImagePicker.launchImageLibraryAsync({
+    //   mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    //   allowsEditing: true,
+    //   aspect: [1, 1],
+    //   quality: 0.8,
+    // });
+    // if (!result.canceled) {
+    //   const uri = result.assets[0].uri;
+    //   const uploadedUrl = await uploadImage(uri);
+    //   if (uploadedUrl) {
+    //     setForm({ ...form, image_url: uploadedUrl });
+    //   }
+    // }
+
+    Alert.alert(
+      '📸 Image Upload',
+      'Image picker integration is ready — implement with expo-image-picker when needed.'
+    );
+  };
+
   const uploadImage = async (uri: string) => {
     setImageUploading(true);
     try {
-      // 🔹 In Expo, use FileSystem to get base64 or blob
-      // For simplicity, assume `uri` is a local file URI
       const response = await fetch(uri);
       const blob = await response.blob();
 
@@ -85,17 +114,28 @@ export default function EditMenuItem() {
 
   const handleSubmit = async () => {
     const { name, price, description, stock, isAvailable } = form;
-    if (!name || !price || !description) {
-      Alert.alert('Validation', 'Please fill all fields');
+
+    if (!name.trim() || !price.trim() || !description.trim()) {
+      Alert.alert('Validation', 'Name, price, and description are required.');
+      return;
+    }
+
+    if (isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
+      Alert.alert('Validation', 'Price must be a positive number.');
+      return;
+    }
+
+    if (isNaN(parseInt(stock, 10)) || parseInt(stock, 10) < 0) {
+      Alert.alert('Validation', 'Stock must be a non-negative number.');
       return;
     }
 
     setLoading(true);
     try {
       const data = {
-        name,
+        name: name.trim(),
         price: parseFloat(price),
-        description,
+        description: description.trim(),
         stock: parseInt(stock, 10),
         isAvailable,
         image_url: form.image_url,
@@ -117,78 +157,164 @@ export default function EditMenuItem() {
         );
       }
 
-      Alert.alert('Success', id ? 'Item updated' : 'Item created');
+      Alert.alert('✅ Success', id ? 'Menu item updated!' : 'New item added!');
       router.back();
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Operation failed');
+      Alert.alert('❌ Error', e.message || 'Operation failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <ScrollView contentContainerClassName="p-4">
-        <Text className="h1-bold mb-6">{id ? 'Edit Item' : 'Add New Item'}</Text>
-
-        {/* Image Upload (simplified) */}
-        <TouchableOpacity
-          className="w-32 h-32 bg-gray-200 rounded-xl items-center justify-center mb-4"
-          onPress={() => {
-            // 🔹 Integrate Expo ImagePicker here
-            Alert.alert('Feature', 'Image picker not implemented yet');
-          }}
+    <SafeAreaView className="flex-1 bg-gray-50">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
+      >
+        <ScrollView
+          contentContainerClassName="p-5 pb-10"
+          showsVerticalScrollIndicator={false}
         >
-          {form.image_url ? (
-            <Image source={{ uri: form.image_url }} className="size-full rounded-xl" />
-          ) : (
-            <Text className="body-medium text-gray-500">+ Upload Image</Text>
-          )}
-        </TouchableOpacity>
-
-        <CustomInput
-          label="Name"
-          value={form.name}
-          onChangeText={(text) => setForm({ ...form, name: text })}
-        />
-        <CustomInput
-          label="Price ($)"
-          value={form.price}
-          onChangeText={(text) => setForm({ ...form, price: text })}
-          keyboardType="numeric"
-        />
-        <CustomInput
-          label="Description"
-          value={form.description}
-          onChangeText={(text) => setForm({ ...form, description: text })}
-        />
-        <CustomInput
-          label="Stock"
-          value={form.stock}
-          onChangeText={(text) => setForm({ ...form, stock: text })}
-          keyboardType="numeric"
-        />
-
-        <View className="flex-row items-center mt-2">
-          <View
-            className={`w-5 h-5 rounded-full border mr-3 ${
-              form.isAvailable ? 'bg-primary border-primary' : 'border-gray-400'
-            }`}
-          />
-          <TouchableOpacity onPress={() => setForm({ ...form, isAvailable: !form.isAvailable })}>
-            <Text className="body-medium">
-              {form.isAvailable ? 'Available' : 'Unavailable'}
+          {/* Header */}
+          <View className="mb-6">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="w-8 h-8 mb-2 items-center justify-center"
+            >
+              <Text className="text-lg">←</Text>
+            </TouchableOpacity>
+            <Text className="text-2xl font-bold text-gray-800">
+              {id ? '✏️ Edit Menu Item' : '➕ Add New Item'}
             </Text>
-          </TouchableOpacity>
-        </View>
+          </View>
 
-        <CustomButton
-          title={id ? 'Update Item' : 'Create Item'}
-          onPress={handleSubmit}
-          isLoading={loading || imageUploading}
-          style="mt-6"
-        />
-      </ScrollView>
+          {/* Image Section */}
+          <View className="mb-6">
+            <Text className="text-sm font-medium text-gray-700 mb-2">Item Image</Text>
+            <TouchableOpacity
+              onPress={handleImagePress}
+              disabled={imageUploading}
+              className={`w-full h-48 rounded-xl border-2 border-dashed ${
+                imageUploading
+                  ? 'border-blue-300 bg-blue-50'
+                  : form.image_url
+                  ? 'border-transparent'
+                  : 'border-gray-300 bg-gray-100'
+              } flex items-center justify-center overflow-hidden`}
+            >
+              {imageUploading ? (
+                <Text className="text-blue-600 font-medium">Uploading…</Text>
+              ) : form.image_url ? (
+                <Image
+                  source={{ uri: form.image_url }}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
+              ) : (
+                <View className="items-center">
+                  <View className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-2">
+                    <Text className="text-gray-500 text-lg">📷</Text>
+                  </View>
+                  <Text className="text-gray-500 text-center px-2">
+                    Tap to upload photo (1:1 recommended)
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Form Fields */}
+          <View className="space-y-4">
+            <CustomInput
+              label="📌 Name"
+              value={form.name}
+              onChangeText={(text) => setForm({ ...form, name: text })}
+              placeholder="e.g. Spicy Lamb Tibs"
+              autoCapitalize="words"
+              autoCorrect={false}
+            />
+
+            <View className="flex-row gap-3">
+              <View className="flex-1">
+                <CustomInput
+                  label="💰 Price ($)"
+                  value={form.price}
+                  onChangeText={(text) =>
+                    setForm({ ...form, price: text.replace(/[^0-9.]/g, '') })
+                  }
+                  keyboardType="decimal-pad"
+                  placeholder="9.99"
+                />
+              </View>
+              <View className="flex-1">
+                <CustomInput
+                  label="🔢 Stock"
+                  value={form.stock}
+                  onChangeText={(text) =>
+                    setForm({ ...form, stock: text.replace(/[^0-9]/g, '') })
+                  }
+                  keyboardType="number-pad"
+                  placeholder="10"
+                />
+              </View>
+            </View>
+
+            <CustomInput
+              label="📝 Description"
+              value={form.description}
+              onChangeText={(text) => setForm({ ...form, description: text })}
+              placeholder="Delicious slow-cooked lamb with berbere spice…"
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+              className="h-24 pt-3"
+            />
+
+            {/* Availability Toggle */}
+            <View className="pt-2">
+              <Text className="text-sm font-medium text-gray-700 mb-2">Status</Text>
+              <TouchableOpacity
+                onPress={() => setForm({ ...form, isAvailable: !form.isAvailable })}
+                className={`flex-row items-center p-4 rounded-xl ${
+                  form.isAvailable ? 'bg-green-50 border border-green-200' : 'bg-gray-100'
+                }`}
+              >
+                <View
+                  className={`w-5 h-5 rounded-full mr-3 border ${
+                    form.isAvailable
+                      ? 'bg-green-500 border-green-500'
+                      : 'bg-white border-gray-400'
+                  }`}
+                />
+                <View>
+                  <Text
+                    className={`font-medium ${
+                      form.isAvailable ? 'text-green-700' : 'text-gray-600'
+                    }`}
+                  >
+                    {form.isAvailable ? '✅ In Stock & Available' : '⏸️ Temporarily Unavailable'}
+                  </Text>
+                  <Text className="text-xs text-gray-500 mt-0.5">
+                    {form.isAvailable
+                      ? 'Visible to customers'
+                      : 'Hidden from menu until re-enabled'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Submit Button */}
+          <CustomButton
+            title={id ? '💾 Save Changes' : '✅ Add Item'}
+            onPress={handleSubmit}
+            isLoading={loading || imageUploading}
+            disabled={loading || imageUploading}
+            className="mt-8 py-4"
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
